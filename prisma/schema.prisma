@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  name     String
+  sessions Session[]
+  bookings Booking[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Flight {
+  id              Int                    @id @default(autoincrement())
+  airline         String
+  airlineCode     String
+  flightNumber    Int                    @unique
+  origin          String
+  destination     String
+  price           Float
+  departureTime   DateTime               @map("departure")
+  arrivalTime     DateTime               @map("arrival")
+  duration        String
+  seatsAvailable  Int                    @map("availableSeats")
+  bookings        Booking[]
+  operationalDays FlightOperationalDay[]
+
+  @@index([origin, destination])
+  @@index([departureTime])
+}
+
+model Booking {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  flightId      Int
+  seatNumber    String   
+  passengerName String
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  flight        Flight   @relation(fields: [flightId], references: [id])
+
+  @@unique([flightId, seatNumber])
+}
+
+model FlightOperationalDay {
+  id       Int    @id @default(autoincrement())
+  flightId Int    
+  day      Int 
+  flight   Flight @relation(fields: [flightId], references: [id])
+
+  @@unique([flightId, day])
+}
