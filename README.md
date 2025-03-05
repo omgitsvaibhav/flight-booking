@@ -12,10 +12,10 @@
 
 Before running the application, ensure you have the following installed:
 
-- **Node.js**: Version 18.x or higher ([Download](https://nodejs.org/))
-- **npm**: Comes with Node.js (verify with `npm -v`)
-- **MySQL**: Version 8.x or higher ([Download](https://dev.mysql.com/downloads/))
-- **Git**: For cloning the repository ([Download](https://git-scm.com/))
+- **Node.js**: Version 18.x or higher
+- **npm**: Comes with Node.js
+- **MySQL**: Version 8.x or higher
+- **Git**: For cloning the repository
 
 ## Setup Instructions
 
