@@ -7,10 +7,11 @@ const searchSchema = z.object({
   origin: z.string().min(3),
   destination: z.string().min(3),
   departureDate: z.string().datetime(),
+  passengers: z.coerce.number().int().min(1).default(1),
 });
 
 const bookingSchema = z.object({
-  flightId: z.number(), // Expects flightNumber from the request
+  flightId: z.number(),
   seatNumber: z.string(),
   passengerName: z.string().min(1),
 });
@@ -26,7 +27,7 @@ export default class FlightService {
         where: {
           origin: validated.origin,
           destination: validated.destination,
-          seatsAvailable: { gt: 0 },
+          seatsAvailable: { gte: validated.passengers }, // Filter by number of passengers
           departureTime: {
             gte: new Date(searchDate.setHours(0, 0, 0, 0)),
             lte: new Date(searchDate.setHours(23, 59, 59, 999)),
@@ -54,7 +55,6 @@ export default class FlightService {
     try {
       const validated = bookingSchema.parse(data);
 
-      // Find the flight by flightNumber
       const flight = await prisma.flight.findUnique({
         where: { flightNumber: validated.flightId },
       });
@@ -63,7 +63,6 @@ export default class FlightService {
         throw new AppError("Flight not available", 400);
       }
 
-      // Check if the seat is already booked for this flight
       const existingBooking = await prisma.booking.findFirst({
         where: {
           flightId: flight.id,
@@ -75,7 +74,6 @@ export default class FlightService {
         throw new AppError("Seat already booked for this flight", 400);
       }
 
-      // Use a transaction to update seats and create booking atomically
       const [updatedFlight, booking] = await prisma.$transaction([
         prisma.flight.update({
           where: { id: flight.id },
